@@ -1,0 +1,19 @@
+{
+  "name": "nuxt-app",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "nuxt",
+    "start": "nuxt start",
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "axios": "^0.16.2",
+    "babel-core": "^6.25.0",
+    "nuxt": "0.10.7",
+    "semantic-ui-css": "^2.2.10"
+  },
+  "engines": {
+    "node": "8.x.x"
+  }
+}
