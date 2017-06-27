@@ -4,7 +4,7 @@ const get = (url) => axios({
   url,
   method: 'GET',
   headers: {
-    Authorization: `Bearer ${process.env.GITHUB_TOKEN || process.env.github_token || ""}`
+    Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
   }
 });
 
