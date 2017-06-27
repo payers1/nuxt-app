@@ -1,3 +1,3 @@
 # nuxt-app
 
-https://payers1.github.io/nuxt-app/
+https://nuxt-app-oiakiuaqoo.now.sh/
