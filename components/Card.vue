@@ -1,80 +1,66 @@
 <template>
-  <div class='card'>
-    <div class='card-content'>
-      <div class='avatar'>
-        <img style="border-radius: 20px; width: 40px; height: 40px" :src="user.avatar_url"/>
+  <el-col :gutter="20" :lg="8" :sm="12">
+    <el-card class="box-card" shadow="hover">
+      <div slot="header">
+        <el-row type="flex" justify="space-between">
+          <el-col :span="20"><span> {{wine.title}} </span></el-col>
+          <el-col :span="2"><span> {{wine.price}} </span></el-col>
+        </el-row>
       </div>
-      <div class='stuff'>
-        <div class='card-title'>
-        <div> {{user.name}} </div>
-        <div class='card-subtitle'>
-          <span> {{user.login}} </span>
-          <span> {{user.email}} </span>
-        </div>
-      </div>
-        <div class='location'> {{ user.location }} </div>
-      </div>
-    </div>
-  </div>
+      <el-row>
+        <el-col :span="10">
+          <img :src="image" class="image">
+        </el-col>
+        <el-col :span="14">
+          <el-tag v-for="tag in tags">{{tag}}</el-tag>
+        </el-col>
+      </el-row>
+    </el-card>
+  </el-col>
 </template>
 
 <script>
-  export default {
-    props: ['user'],
-    data() {
-      return {
-        src: ''
+import { from } from 'rxjs'
+import { map, mapTo, pluck, exhaustMap, startWith, share } from 'rxjs/operators'
+
+export default {
+  computed: {
+    image: function() {
+      if (this.wine.img) {
+        return `https://www.finewineandgoodspirits.com${this.wine.img}`
       }
+      return 'http://via.placeholder.com/200x300'
+    },
+    tags: function() {
+      const filteredRatings = this.wine.ratings.filter(
+        item => item != "Chairman's Selection�"
+      )
+      const tag = this.wine.tag.replace('�', '')
+      return this.wine.tag ? filteredRatings.concat(tag) : filteredRatings
     }
-  }
+  },
+  props: ['wine']
+}
 </script>
 
 <style scoped>
-
-.location {
-  font-size: 10px;
+.box-card {
+  margin-bottom: 30px;
+  height: 400px;
 }
-.stuff {
-  display: flex;
-  flex-direction: column;
-  align-content: flex-end;
-}
-
-.card-content {
-  padding: 12px;
-  display: flex;
+.button {
+  float: right;
+  padding: 3px 0;
 }
 
-.card-title {
-  max-width: 180px;
-  flex-grow: 1;
-  font-size: 18px;
+p {
+  margin: 0;
 }
-
-.card-subtitle {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: rgb(133, 139, 147)
+.el-tag {
+  margin-right: 5px;
 }
-
-.card {
-  display: flex;
-  box-sizing: border-box;
-  width: 320px;
-  min-height: 90px;
-  margin-bottom: 10px;
-  /*margin-left: 0px;*/
-  background: white;
-  box-shadow: 1px 2px 1px rgb(213, 213, 214);
+.image {
+  height: 300px;
+  width: 200px;
 }
-
-.avatar {
-  width: 40px;
-  text-align: center;
-  line-height: 40px;
-  margin-right: 12px;
-}
-
-
 </style>
