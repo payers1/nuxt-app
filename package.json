@@ -13,15 +13,23 @@
   "dependencies": {
     "axios": "^0.18.0",
     "babel-core": "^6.25.0",
-    "element-ui": "^2.4.1",
-    "gh-pages": "^1.2.0",
+    "element-ui": "^2.4.5",
     "lodash": "^4.17.4",
     "nuxt": "^1.4.1",
     "push-dir": "^0.4.1",
-    "semantic-ui-css": "^2.2.10",
+    "rxjs": "^6.2.2",
+    "vue-axios": "^2.1.2",
+    "vue-rx": "^6.0.1",
     "vuetrend": "^0.3.2"
   },
-  "engines": {
-    "node": "8.x.x"
+  "devDependencies": {
+    "babel-eslint": "^8.2.6",
+    "eslint": "^5.2.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-loader": "^2.1.0",
+    "eslint-plugin-prettier": "^2.6.2",
+    "eslint-plugin-vue": "^4.7.1",
+    "gh-pages": "^1.2.0",
+    "prettier": "^1.13.7"
   }
 }
