@@ -1,24 +1,29 @@
 <template>
   <el-container>
     <el-main>
-      <el-row type="flex">
-        <el-col>
-      <el-pagination
-        layout="prev, pager, next"
-        :total="len$"
-        :page-size="6"
-        :current-page.sync="currentPage" />
+      <el-row class="controls" type="flex">
+        <el-col :xs="24" :md="8">
+          <el-pagination
+            layout="prev, pager, next"
+            :total="len$"
+            :page-size="6"
+            :current-page.sync="currentPage" />
         </el-col>
-        <el-col>
-        <el-slider
-          v-model="priceRange"
-          range
-          :max="100" />
+        <el-col :xs="24" :md="8" style="text-align:center; margin-top:-8px">
+          <el-checkbox-group v-model="filterGroup">
+            <el-checkbox-button border v-for="filter in filters" :label="filter" :key="filter">
+              {{filter}}
+            </el-checkbox-button>
+          </el-checkbox-group>
           </el-col>
+        <el-col :xs="24" :md="8">
+          <el-slider
+            v-model="priceRange"
+            range
+            :max="100" />
+        </el-col>
         </el-row>
       <el-row :gutter="30">
-        <div>
-        </div>
         <card v-for="wine$ in wines$" :wine="wine$._source" :key="wine$._source.productId" />
       </el-row>
     </el-main>
@@ -28,7 +33,7 @@
 <script>
 import Card from '@/components/Card'
 import { from, combineLatest } from 'rxjs'
-import { map, mapTo, pluck, exhaustMap, startWith, share } from 'rxjs/operators'
+import { map, pluck, exhaustMap, share, debounceTime } from 'rxjs/operators'
 
 export default {
   components: {
@@ -36,26 +41,46 @@ export default {
   },
   data() {
     return {
+      filterGroup: [],
       currentPage: 1,
-      priceRange: [8, 25]
+      priceRange: [8, 25],
+      filters: ['Top Rated']
     }
   },
   subscriptions() {
     const PAGE_SIZE = 6
-    const createLoader = ({ url, q }) => from(this.$http.post(url, q))
-
-    const baseUrl =
+    const BASE_URL =
       'https://search-winedomain-7d66zy5brbaqa3i253pipja3ym.us-east-1.es.amazonaws.com/'
 
-    const createUrl = ([pageNum, priceRange]) => {
-      const url = `${baseUrl}/wines/wine/_search?size=${PAGE_SIZE}&from=${pageNum *
+    const createLoader = ({ url, q }) => from(this.$http.post(url, q))
+
+    const createUrl = ([pageNum, priceRange, filters]) => {
+      const tagFilters =
+        filters.length > 0
+          ? {
+              must: [
+                {
+                  match: {
+                    tag: 'Top Rated'
+                  }
+                }
+              ]
+            }
+          : {}
+      const url = `${BASE_URL}/wines/wine/_search?size=${PAGE_SIZE}&from=${(pageNum -
+        1) *
         PAGE_SIZE}`
       const q = {
         query: {
-          range: {
-            price: {
-              gte: priceRange[0],
-              lt: priceRange[1]
+          bool: {
+            ...tagFilters,
+            filter: {
+              range: {
+                price: {
+                  gte: priceRange[0],
+                  lt: priceRange[1]
+                }
+              }
             }
           }
         }
@@ -68,16 +93,28 @@ export default {
 
     const priceRange$ = this.$watchAsObservable('priceRange', {
       immediate: true
-    }).pipe(pluck('newValue'))
+    }).pipe(
+      debounceTime(1000),
+      pluck('newValue')
+    )
 
     const currentPage$ = this.$watchAsObservable('currentPage', {
       immediate: true
     }).pipe(pluck('newValue'))
 
-    const data$ = combineLatest(currentPage$, priceRange$).pipe(
+    const currentFilters$ = this.$watchAsObservable('filterGroup', {
+      immediate: true
+    }).pipe(pluck('newValue'))
+
+    const data$ = combineLatest(
+      currentPage$,
+      priceRange$,
+      currentFilters$
+    ).pipe(
       map(createUrl),
       exhaustMap(createLoader),
-      pluck('data', 'hits')
+      pluck('data', 'hits'),
+      share()
     )
 
     const wines$ = data$.pipe(pluck('hits'))
