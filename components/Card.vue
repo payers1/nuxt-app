@@ -3,8 +3,8 @@
     <el-card class="box-card" shadow="hover">
       <div slot="header">
         <el-row type="flex" justify="space-between">
-          <el-col :span="20"><span> {{wine.title}} </span></el-col>
-          <el-col :span="2"><span> {{wine.price}} </span></el-col>
+          <el-col :xs="18" :sm="20"><span> {{wine.title}} </span></el-col>
+          <el-col :xs="4" :sm="2"><span> {{wine.price}} </span></el-col>
         </el-row>
       </div>
       <el-row>
@@ -12,7 +12,7 @@
           <img :src="image" class="image">
         </el-col>
         <el-col :span="14">
-          <el-tag v-for="tag in tags">{{tag}}</el-tag>
+          <el-tag v-for="tag in tags" :key="tag">{{tag}}</el-tag>
         </el-col>
       </el-row>
     </el-card>
@@ -36,7 +36,9 @@ export default {
         item => item != "Chairman's Selection�"
       )
       const tag = this.wine.tag.replace('�', '')
-      return this.wine.tag ? filteredRatings.concat(tag) : filteredRatings
+      return this.wine.tag
+        ? [...new Set(filteredRatings.concat(tag))]
+        : filteredRatings
     }
   },
   props: ['wine']
@@ -60,7 +62,7 @@ p {
   margin-right: 5px;
 }
 .image {
-  height: 300px;
-  width: 200px;
+  max-width: 100%;
+  height: auto;
 }
 </style>
