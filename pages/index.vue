@@ -93,4 +93,8 @@ export default {
 </script>
 
 <style scoped>
+.controls {
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
 </style>

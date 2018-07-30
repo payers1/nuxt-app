@@ -60,6 +60,7 @@ p {
 }
 .el-tag {
   margin-right: 5px;
+  margin-bottom: 5px;
 }
 .image {
   max-width: 100%;
