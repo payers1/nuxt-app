@@ -12,7 +12,18 @@
           <img :src="image" class="image">
         </el-col>
         <el-col :span="14">
-          <el-tag v-for="tag in tags" :key="tag">{{tag}}</el-tag>
+          <el-row class="tags">
+            <el-tag v-for="tag in tags" :key="tag">{{tag}}</el-tag>
+            <el-tag>{{wine.variety}}</el-tag>
+          </el-row>
+          <el-row>
+            <el-form>
+                <el-form-item>
+                  <el-input type="textarea" :autosize="size" resize="none" v-model="wine.description"></el-input>
+                </el-form-item>
+                <el-button v-stream:click="save$" type="primary">Save</el-button>
+            </el-form>
+          </el-row>
         </el-col>
       </el-row>
     </el-card>
@@ -22,15 +33,46 @@
 <script>
 import gql from 'graphql-tag'
 import { from } from 'rxjs'
-import { map, mapTo, pluck, exhaustMap, startWith, share } from 'rxjs/operators'
+import { map, pluck, exhaustMap, switchMap, share } from 'rxjs/operators'
 
 export default {
+  data() {
+    return {
+      size: {
+        maxRows: 6
+      },
+      search: ''
+    }
+  },
+  methods: {
+    updateWineDescription() {
+      const { productId, description } = this.wine
+      return this.$apollo.mutate({
+        mutation: gql`
+          mutation($productId: String!, $description: String) {
+            updateWine(productId: $productId, description: $description) {
+              description
+            }
+          }
+        `,
+        variables: {
+          productId,
+          description
+        }
+      })
+    }
+  },
+  domStreams: ['save$'],
+  subscriptions() {
+    const createLoader = () => from(this.updateWineDescription())
+    const update$ = this.save$.pipe(switchMap(createLoader))
+    return {
+      update$
+    }
+  },
   computed: {
     image: function() {
-      if (this.wine.img) {
-        return `https://www.finewineandgoodspirits.com${this.wine.img}`
-      }
-      return 'http://via.placeholder.com/200x300'
+      return `https://www.finewineandgoodspirits.com${this.wine.img}`
     },
     tags: function() {
       const filteredRatings = this.wine.ratings.filter(
@@ -66,5 +108,12 @@ p {
 .image {
   max-width: 100%;
   height: auto;
+}
+.tags {
+  margin-bottom: 19px;
+}
+
+.el-textarea {
+  resize: none !important;
 }
 </style>

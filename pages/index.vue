@@ -10,7 +10,7 @@
             :current-page.sync="currentPage" />
         </el-col>
         <el-col :xs="24" :md="8" style="text-align:center; margin-top:-8px">
-          <el-checkbox-group v-model="filterGroup">
+          <el-checkbox-group :max="1" v-model="filterGroup">
             <el-checkbox-button border v-for="filter in filters" :label="filter" :key="filter">
               {{filter}}
             </el-checkbox-button>
@@ -44,7 +44,7 @@ export default {
       filterGroup: [],
       currentPage: 1,
       priceRange: [8, 25],
-      filters: ['Top Rated']
+      filters: ['Top Rated', 'Chairmans Selection']
     }
   },
   subscriptions() {
@@ -61,7 +61,7 @@ export default {
               must: [
                 {
                   match: {
-                    tag: 'Top Rated'
+                    tag: filters[0]
                   }
                 }
               ]
