@@ -13,7 +13,12 @@ export default {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', content: 'Wine Admin' }
     ],
-    link: []
+    link: [
+      {
+        rel: 'stylesheet',
+        href: 'https://unpkg.com/element-ui/lib/theme-chalk/index.css'
+      }
+    ]
   }
 }
 </script>

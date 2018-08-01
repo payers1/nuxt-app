@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import gql from 'graphql-tag'
 import { from } from 'rxjs'
 import { map, mapTo, pluck, exhaustMap, startWith, share } from 'rxjs/operators'
 
