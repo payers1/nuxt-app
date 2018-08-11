@@ -5,8 +5,8 @@
         <el-col :xs="24" :md="8">
           <el-pagination
             layout="prev, pager, next"
-            :total="len$"
-            :page-size="6"
+            :total="len"
+            :page-size="4"
             :current-page.sync="currentPage" />
         </el-col>
         <el-col :xs="24" :md="8" style="text-align:center; margin-top:-8px">
@@ -24,7 +24,7 @@
         </el-col>
         </el-row>
       <el-row :gutter="30">
-        <card v-for="wine$ in wines$" :wine="wine$._source" :key="wine$._source.productId" />
+        <card v-for="wine$ in wines$" :wine="wine$" :key="wine$.productId" />
       </el-row>
     </el-main>
   </el-container>
@@ -39,6 +39,11 @@ export default {
   components: {
     Card
   },
+  computed: {
+    len: function() {
+      return this.wines$ && this.wines$.length
+    }
+  },
   data() {
     return {
       filterGroup: [],
@@ -48,42 +53,32 @@ export default {
     }
   },
   subscriptions() {
-    const PAGE_SIZE = 6
-    const BASE_URL =
-      'https://search-winedomain-7d66zy5brbaqa3i253pipja3ym.us-east-1.es.amazonaws.com/'
-
+    const PAGE_SIZE = 4
     const createLoader = ({ url, q }) => from(this.$http.post(url, q))
 
     const createUrl = ([pageNum, priceRange, filters]) => {
-      const tagFilters =
-        filters.length > 0
-          ? {
-              must: [
-                {
-                  match: {
-                    tag: filters[0]
-                  }
-                }
-              ]
-            }
-          : {}
-      const url = `${BASE_URL}/wines/wine/_search?size=${PAGE_SIZE}&from=${(pageNum -
-        1) *
-        PAGE_SIZE}`
+      const BASE_URL =
+        'https://owlifsh7s1.execute-api.us-east-1.amazonaws.com/dev/graphql'
+      const url = BASE_URL
+      let categoryFilter = 'category_id: "all"'
       const q = {
-        query: {
-          bool: {
-            ...tagFilters,
-            filter: {
-              range: {
-                price: {
-                  gte: priceRange[0],
-                  lt: priceRange[1]
-                }
-              }
-            }
+        query: `{
+          wines(
+            minprice: ${priceRange[0]},
+            maxprice: ${priceRange[1]},
+            ${categoryFilter}
+          ) {
+            variety
+            productId
+            tag
+            ratings
+            img
+            title
+            price
+            description
+            starred
           }
-        }
+        }`
       }
       return {
         url,
@@ -106,22 +101,17 @@ export default {
       immediate: true
     }).pipe(pluck('newValue'))
 
-    const data$ = combineLatest(
+    const wines$ = combineLatest(
       currentPage$,
       priceRange$,
       currentFilters$
     ).pipe(
       map(createUrl),
       exhaustMap(createLoader),
-      pluck('data', 'hits'),
-      share()
+      pluck('data', 'data', 'wines')
     )
 
-    const wines$ = data$.pipe(pluck('hits'))
-    const len$ = data$.pipe(pluck('total'))
-
     return {
-      len$,
       wines$,
       currentPage$
     }
