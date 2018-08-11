@@ -1,17 +1,18 @@
 <template>
-  <el-col :gutter="20" :lg="8" :sm="12">
+  <el-col :gutter="20" :xl="8" :md="12" :sm="12">
     <el-card class="box-card" shadow="hover">
       <div slot="header">
         <el-row type="flex" justify="space-between">
-          <el-col :xs="18" :sm="20"><span> {{wine.title}} </span></el-col>
-          <el-col :xs="4" :sm="2"><span> {{wine.price}} </span></el-col>
+          <el-col :xs="18" :sm="19"><span> {{wine.title}} </span></el-col>
+          <el-col :xs="3" :sm="2"><span> {{wine.price}} </span></el-col>
+          <el-col :xs="1" :sm="2">  <el-button type="plain" :icon="icon" @click="toggleStarred()" circle></el-button></el-col>
         </el-row>
       </div>
       <el-row>
-        <el-col :span="10">
+        <el-col :span="8">
           <img :src="image" class="image">
         </el-col>
-        <el-col :span="14">
+        <el-col :span="16">
           <el-row class="tags">
             <el-tag v-for="tag in tags" :key="tag">{{tag}}</el-tag>
             <el-tag>{{wine.variety}}</el-tag>
@@ -38,6 +39,7 @@ import { map, pluck, exhaustMap, switchMap, share } from 'rxjs/operators'
 export default {
   data() {
     return {
+      starred: false,
       size: {
         maxRows: 6
       },
@@ -45,19 +47,33 @@ export default {
     }
   },
   methods: {
+    toggleStarred() {
+      this.starred = !this.starred
+    },
     updateWineDescription() {
+      const starred = this.wine.starred || this.starred
       const { productId, description } = this.wine
       return this.$apollo.mutate({
         mutation: gql`
-          mutation($productId: String!, $description: String) {
-            updateWine(productId: $productId, description: $description) {
+          mutation(
+            $productId: String!
+            $description: String
+            $starred: Boolean
+          ) {
+            updateWine(
+              productId: $productId
+              description: $description
+              starred: $starred
+            ) {
               description
+              starred
             }
           }
         `,
         variables: {
           productId,
-          description
+          description,
+          starred
         }
       })
     }
@@ -71,6 +87,11 @@ export default {
     }
   },
   computed: {
+    icon: function() {
+      return this.starred || this.wine.starred
+        ? 'el-icon-star-on'
+        : 'el-icon-star-off'
+    },
     image: function() {
       return `https://www.finewineandgoodspirits.com${this.wine.img}`
     },
@@ -90,6 +111,7 @@ export default {
 
 <style scoped>
 .box-card {
+  background: white;
   margin-bottom: 30px;
   height: 400px;
 }
@@ -115,5 +137,8 @@ p {
 
 .el-textarea {
   resize: none !important;
+}
+.el-row {
+  align-items: center;
 }
 </style>
