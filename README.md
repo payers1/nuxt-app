@@ -1,3 +1,3 @@
 # nuxt-app
 
-https://nuxt-app-oiakiuaqoo.now.sh/
+https://romantic-beaver-878488.netlify.com/
