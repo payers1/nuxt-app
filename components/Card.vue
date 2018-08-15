@@ -100,7 +100,7 @@ export default {
         item => item != "Chairman's Selection�"
       )
       const tag = this.wine.tag.replace('�', '')
-      return this.wine.tag
+      return this.wine.tag && this.wine.tag !== 'no_tag'
         ? [...new Set(filteredRatings.concat(tag))]
         : filteredRatings
     }
