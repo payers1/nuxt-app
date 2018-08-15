@@ -6,17 +6,17 @@
           <el-pagination
             layout="prev, pager, next"
             :total="len"
-            :page-size="4"
+            :page-size="9"
             :current-page.sync="currentPage" />
         </el-col>
         <el-col :xs="24" :md="8" style="text-align:center; margin-top:-8px">
-          <el-checkbox-group :max="1" v-model="filterGroup">
-            <el-checkbox-button border v-for="filter in filters" :label="filter" :key="filter">
+          <el-radio-group v-model="filterGroup">
+            <el-radio-button border v-for="filter in filters" :label="filter" :key="filter">
               {{filter}}
-            </el-checkbox-button>
-          </el-checkbox-group>
+            </el-radio-button>
+          </el-radio-group>
           </el-col>
-        <el-col :xs="24" :md="8">
+        <el-col :xs="24" :offset="1" :md="6">
           <el-slider
             v-model="priceRange"
             range
@@ -24,7 +24,7 @@
         </el-col>
         </el-row>
       <el-row :gutter="30">
-        <card v-for="wine$ in wines$" :wine="wine$" :key="wine$.productId" />
+        <card v-for="wine$ in wines" :wine="wine$" :key="wine$.productId" />
       </el-row>
     </el-main>
   </el-container>
@@ -33,7 +33,17 @@
 <script>
 import Card from '@/components/Card'
 import { from, combineLatest } from 'rxjs'
-import { map, pluck, exhaustMap, share, debounceTime } from 'rxjs/operators'
+import {
+  map,
+  pluck,
+  startWith,
+  exhaustMap,
+  share,
+  debounceTime,
+  merge,
+  mapTo,
+  scan
+} from 'rxjs/operators'
 
 export default {
   components: {
@@ -42,6 +52,12 @@ export default {
   computed: {
     len: function() {
       return this.wines$ && this.wines$.length
+    },
+    wines: function() {
+      return (
+        this.wines$ &&
+        this.wines$.slice((this.currentPage - 1) * 9, this.currentPage * 9)
+      )
     }
   },
   data() {
@@ -49,18 +65,33 @@ export default {
       filterGroup: [],
       currentPage: 1,
       priceRange: [8, 25],
-      filters: ['Top Rated', 'Chairmans Selection']
+      filters: ['Top Rated', 'Chairmans Selection', 'Red', 'Sparkling', 'Rosé']
     }
   },
   subscriptions() {
-    const PAGE_SIZE = 4
+    const getCategoryFilter = filters => {
+      console.log('filters', filters)
+      if (!filters) {
+        return 'category_id: "Top Rated"'
+      } else if (filters === 'Top Rated') {
+        return 'category_id: "top_rated"'
+      } else if (filters === 'Red') {
+        return 'category_id: "red"'
+      } else if (filters === 'Sparkling') {
+        return 'category_id: "sparkling"'
+      } else if (filters === 'Rosé') {
+        return 'category_id: "rose"'
+      }
+      return 'category_id: "chairmans"'
+    }
     const createLoader = ({ url, q }) => from(this.$http.post(url, q))
 
-    const createUrl = ([pageNum, priceRange, filters]) => {
+    const createUrl = ([priceRange, filters]) => {
       const BASE_URL =
         'https://owlifsh7s1.execute-api.us-east-1.amazonaws.com/dev/graphql'
       const url = BASE_URL
-      let categoryFilter = 'category_id: "all"'
+      let categoryFilter = getCategoryFilter(filters)
+      console.log('cat filter', categoryFilter)
       const q = {
         query: `{
           wines(
@@ -94,18 +125,14 @@ export default {
     )
 
     const currentPage$ = this.$watchAsObservable('currentPage', {
-      immediate: true
+      immediate: false
     }).pipe(pluck('newValue'))
 
     const currentFilters$ = this.$watchAsObservable('filterGroup', {
       immediate: true
     }).pipe(pluck('newValue'))
 
-    const wines$ = combineLatest(
-      currentPage$,
-      priceRange$,
-      currentFilters$
-    ).pipe(
+    const wines$ = combineLatest(priceRange$, currentFilters$).pipe(
       map(createUrl),
       exhaustMap(createLoader),
       pluck('data', 'data', 'wines')
