@@ -16,7 +16,7 @@
     "element-ui": "^2.4.5",
     "graphql-tag": "^2.9.2",
     "lodash": "^4.17.4",
-    "nuxt": "^1.4.1",
+    "nuxt": "^2.1.0",
     "push-dir": "^0.4.1",
     "rxjs": "^6.2.2",
     "vue-axios": "^2.1.2",
